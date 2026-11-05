@@ -57,8 +57,8 @@ preguntar_secreto() {   # preguntar_secreto VARIABLE "Texto" (vacío = se invent
     read -r -s -p "  $texto (Enter = inventar una): " c1 </dev/tty || true; echo
     [ -z "$c1" ] && return
     read -r -s -p "  Repítela: " c2 </dev/tty || true; echo
-    if [ "$c1" = "$c2" ] && [ ${#c1} -ge 8 ]; then printf -v "$var" '%s' "$c1"; return; fi
-    echo "  No coinciden o tiene menos de 8 caracteres."
+    if [ "$c1" = "$c2" ] && [ ${#c1} -ge 10 ]; then printf -v "$var" '%s' "$c1"; return; fi
+    echo "  No coinciden o tiene menos de 10 caracteres."
   done
 }
 
