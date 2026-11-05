@@ -73,7 +73,9 @@ repo_ssh() {    # https://github.com/u/r(.git) o git@github.com:u/r(.git) → gi
 }
 repo_nombre() { local u=${1#git@github.com:}; printf '%s' "${u%.git}"; }   # → usuario/repositorio
 
-en_ct() { pct exec "$CT_ID" -- env LANG=C.UTF-8 LC_ALL=C.UTF-8 DEBIAN_FRONTEND=noninteractive bash -c "$1"; }
+# «pct exec» no siempre trae /usr/local/bin en el PATH (ahí están luzdelnorte-cli y luzdelnorte-actualizar)
+CT_PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+en_ct() { pct exec "$CT_ID" -- env PATH=$CT_PATH LANG=C.UTF-8 LC_ALL=C.UTF-8 DEBIAN_FRONTEND=noninteractive bash -c "$1"; }
 
 crear_llave() {   # crear_llave RUTA COMENTARIO
   en_ct "mkdir -p /root/.ssh && chmod 700 /root/.ssh; [ -f $1 ] || ssh-keygen -q -t ed25519 -N '' -C '$2' -f $1"
@@ -282,8 +284,12 @@ ok "Sistema listo"
 crear_llave "$LLAVE_NUCLEO" "templo-$CT_HOSTNAME-solo-lectura"
 [ -n "$TEMA" ] && crear_llave "$LLAVE_TEMA" "templo-$CT_HOSTNAME-tema-solo-lectura"
 echo
-echo "${N}Ahora, en GitHub${X}: el núcleo${TEMA:+ y el tema} son privados y el contenedor necesita permiso para leerlos."
-echo "GitHub no deja usar la misma llave en dos repositorios: ${TEMA:+son dos llaves distintas, }cada una en el suyo."
+if [ -n "$TEMA" ]; then
+  echo "${N}Ahora, en GitHub${X}: el núcleo y el tema son privados y el contenedor necesita permiso para leerlos."
+  echo "GitHub no deja usar la misma llave en dos repositorios: son dos llaves distintas, cada una en el suyo."
+else
+  echo "${N}Ahora, en GitHub${X}: el núcleo es privado y el contenedor necesita permiso para leerlo."
+fi
 ensenar_llave "$LLAVE_NUCLEO" "$NUCLEO_NOMBRE" "NÚCLEO ($NUCLEO_NOMBRE)"
 if [ -n "$TEMA" ]; then
   ensenar_llave "$LLAVE_TEMA" "$TEMA_NOMBRE" "TEMA ($TEMA_NOMBRE)"
